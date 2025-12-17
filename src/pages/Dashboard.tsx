@@ -5,7 +5,6 @@ import { openCommandPalette } from "../components/CommandPalette";
 import { CopilotCard } from "../components/CopilotCard";
 import { HealthIndicator } from "../components/HealthIndicator";
 import { ModelsWidget } from "../components/ModelsWidget";
-import { OpenCodeKitBanner } from "../components/OpenCodeKitBanner";
 import { StatusIndicator } from "../components/StatusIndicator";
 import { ThemeToggleCompact } from "../components/ThemeToggle";
 import { Button } from "../components/ui";
@@ -892,9 +891,6 @@ export function DashboardPage() {
 			{/* Main content */}
 			<main class="flex-1 p-4 sm:p-6 overflow-y-auto">
 				<div class="max-w-3xl mx-auto space-y-4">
-					{/* === OpenCodeKit Banner === */}
-					<OpenCodeKitBanner />
-
 					{/* === ZONE 1: Onboarding (shows until setup complete) === */}
 					<Show when={!isSetupComplete()}>
 						<div class="p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-brand-50 to-purple-50 dark:from-brand-900/30 dark:to-purple-900/20 border border-brand-200 dark:border-brand-800/50">

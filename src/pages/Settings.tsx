@@ -3379,7 +3379,7 @@ export function SettingsPage() {
 								Version 0.1.59
 							</p>
 							<p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-								Built with love by OpenCodeKit
+								Built with love
 							</p>
 						</div>
 					</div>

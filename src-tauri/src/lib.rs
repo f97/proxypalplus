@@ -1987,7 +1987,8 @@ async fn detect_copilot_api(app: tauri::AppHandle) -> Result<CopilotApiDetection
             "/opt/homebrew/bin/copilot-api".to_string(),
             "/usr/local/bin/copilot-api".to_string(),
             "/usr/bin/copilot-api".to_string(),
-            // pnpm/yarn global bins
+            // bun/pnpm/yarn global bins
+            format!("{}/.bun/bin/copilot-api", home_str),
             format!("{}/Library/pnpm/copilot-api", home_str),
             format!("{}/.local/share/pnpm/copilot-api", home_str),
             format!("{}/.yarn/bin/copilot-api", home_str),
