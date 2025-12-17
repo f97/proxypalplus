@@ -377,6 +377,17 @@ export async function onCopilotAuthRequired(
 	});
 }
 
+export function parseCopilotAuthRequiredPayload(
+	payload: string,
+): CopilotAuthRequiredPayload {
+	let deviceCode: CopilotDeviceCode | undefined;
+	const match = payload.match(/"userCode"\s*:\s*"([^"]+)"/);
+	if (match?.[1]) {
+		deviceCode = { userCode: match[1] };
+	}
+	return { message: payload, deviceCode };
+}
+
 export interface CopilotDeviceCode {
 	userCode: string;
 }

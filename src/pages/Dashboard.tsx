@@ -343,8 +343,6 @@ export function DashboardPage() {
 		setProxyStatus,
 		authStatus,
 		setAuthStatus,
-		config,
-		setConfig,
 		setCurrentPage,
 	} = appStore;
 	const [toggling, setToggling] = createSignal(false);
