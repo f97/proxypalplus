@@ -51,6 +51,8 @@ impl Default for ProxyStatus {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthStatus {
     pub claude: u32,
+    pub copilot: u32,
+    pub kiro: u32,
     pub openai: u32,
     pub gemini: u32,
     pub qwen: u32,
@@ -63,6 +65,8 @@ impl Default for AuthStatus {
     fn default() -> Self {
         Self {
             claude: 0,
+            copilot: 0,
+            kiro: 0,
             openai: 0,
             gemini: 0,
             qwen: 0,
@@ -512,6 +516,12 @@ fn detect_provider_from_model(model: &str) -> String {
        model_lower.starts_with("o3") || model_lower.starts_with("o1") {
         return "openai".to_string();
     }
+	if model_lower.contains("copilot") {
+		return "copilot".to_string();
+	}
+	if model_lower.contains("kiro") {
+		return "kiro".to_string();
+	}
     if model_lower.contains("gemini") {
         return "gemini".to_string();
     }
@@ -545,6 +555,8 @@ fn detect_provider_from_path(path: &str) -> Option<String> {
             if let Some(provider) = parts.get(idx + 1) {
                 return Some(match *provider {
                     "anthropic" => "claude".to_string(),
+                    "copilot" => "copilot".to_string(),
+                    "kiro" => "kiro".to_string(),
                     "openai" => "openai".to_string(),
                     "google" => "gemini".to_string(),
                     p => p.to_string(),
@@ -1507,9 +1519,9 @@ async fn start_copilot(
                         }
                     }
                     
-                    // Check for auth URL in output
-                    if text.contains("https://github.com/login/device") || text.contains("device code") {
-                        // Emit auth required event
+                    // Check for auth URL/device code flow in output
+                    if text.contains("https://github.com/login/device") || text_lower.contains("device") {
+                        // Emit auth required event (UI can parse deviceCode.userCode from payload)
                         let _ = app_handle.emit("copilot-auth-required", text.to_string());
                         println!("[copilot] Auth required - device code flow initiated");
                     }
@@ -2529,6 +2541,8 @@ async fn open_oauth(app: tauri::AppHandle, state: State<'_, AppState>, provider:
     // Use 127.0.0.1 consistently (not localhost) to avoid access control issues
     let endpoint = match provider.as_str() {
         "claude" => format!("http://127.0.0.1:{}/v0/management/anthropic-auth-url?is_webui=true", port),
+        "copilot" => format!("http://127.0.0.1:{}/v0/management/copilot-auth-url?is_webui=true", port),
+        "kiro" => format!("http://127.0.0.1:{}/v0/management/kiro-auth-url?is_webui=true", port),
         "openai" => format!("http://127.0.0.1:{}/v0/management/codex-auth-url?is_webui=true", port),
         "gemini" => format!("http://127.0.0.1:{}/v0/management/gemini-cli-auth-url?is_webui=true", port),
         "qwen" => format!("http://127.0.0.1:{}/v0/management/qwen-auth-url?is_webui=true", port),
@@ -2653,6 +2667,10 @@ async fn refresh_auth_status(app: tauri::AppHandle, state: State<'_, AppState>) 
                     new_auth.qwen += 1;
                 } else if filename.starts_with("iflow-") {
                     new_auth.iflow += 1;
+				} else if filename.starts_with("copilot-") {
+					new_auth.copilot += 1;
+				} else if filename.starts_with("kiro-") {
+					new_auth.kiro += 1;
                 } else if filename.starts_with("vertex-") {
                     new_auth.vertex += 1;
                 } else if filename.starts_with("antigravity-") {
@@ -2695,6 +2713,8 @@ async fn complete_oauth(
         let mut auth = state.auth_status.lock().unwrap();
         match provider.as_str() {
             "claude" => auth.claude += 1,
+			"copilot" => auth.copilot += 1,
+			"kiro" => auth.kiro += 1,
             "openai" => auth.openai += 1,
             "gemini" => auth.gemini += 1,
             "qwen" => auth.qwen += 1,
@@ -2737,6 +2757,8 @@ async fn disconnect_provider(
                 // Match credential files by provider prefix
                 let should_delete = match provider.as_str() {
                     "claude" => filename.starts_with("claude-") || filename.starts_with("anthropic-"),
+					"copilot" => filename.starts_with("copilot-"),
+					"kiro" => filename.starts_with("kiro-"),
                     "openai" => filename.starts_with("codex-"),
                     "gemini" => filename.starts_with("gemini-"),
                     "qwen" => filename.starts_with("qwen-"),
@@ -2759,6 +2781,8 @@ async fn disconnect_provider(
 
     match provider.as_str() {
         "claude" => auth.claude = 0,
+		"copilot" => auth.copilot = 0,
+		"kiro" => auth.kiro = 0,
         "openai" => auth.openai = 0,
         "gemini" => auth.gemini = 0,
         "qwen" => auth.qwen = 0,
@@ -2841,6 +2865,8 @@ fn save_config(state: State<AppState>, config: AppConfig) -> Result<(), String> 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderHealth {
     pub claude: HealthStatus,
+    pub copilot: HealthStatus,
+    pub kiro: HealthStatus,
     pub openai: HealthStatus,
     pub gemini: HealthStatus,
     pub qwen: HealthStatus,
@@ -2881,6 +2907,8 @@ async fn check_provider_health(state: State<'_, AppState>) -> Result<ProviderHea
     if !proxy_running {
         return Ok(ProviderHealth {
             claude: HealthStatus { status: "offline".to_string(), latency_ms: None, last_checked: timestamp },
+            copilot: HealthStatus { status: "offline".to_string(), latency_ms: None, last_checked: timestamp },
+            kiro: HealthStatus { status: "offline".to_string(), latency_ms: None, last_checked: timestamp },
             openai: HealthStatus { status: "offline".to_string(), latency_ms: None, last_checked: timestamp },
             gemini: HealthStatus { status: "offline".to_string(), latency_ms: None, last_checked: timestamp },
             qwen: HealthStatus { status: "offline".to_string(), latency_ms: None, last_checked: timestamp },
@@ -2911,6 +2939,20 @@ async fn check_provider_health(state: State<'_, AppState>) -> Result<ProviderHea
         claude: if auth.claude > 0 && proxy_healthy {
             HealthStatus { status: "healthy".to_string(), latency_ms: Some(latency), last_checked: timestamp }
         } else if auth.claude > 0 {
+            HealthStatus { status: "degraded".to_string(), latency_ms: None, last_checked: timestamp }
+        } else {
+            HealthStatus { status: "unconfigured".to_string(), latency_ms: None, last_checked: timestamp }
+        },
+        copilot: if auth.copilot > 0 && proxy_healthy {
+            HealthStatus { status: "healthy".to_string(), latency_ms: Some(latency), last_checked: timestamp }
+        } else if auth.copilot > 0 {
+            HealthStatus { status: "degraded".to_string(), latency_ms: None, last_checked: timestamp }
+        } else {
+            HealthStatus { status: "unconfigured".to_string(), latency_ms: None, last_checked: timestamp }
+        },
+        kiro: if auth.kiro > 0 && proxy_healthy {
+            HealthStatus { status: "healthy".to_string(), latency_ms: Some(latency), last_checked: timestamp }
+        } else if auth.kiro > 0 {
             HealthStatus { status: "degraded".to_string(), latency_ms: None, last_checked: timestamp }
         } else {
             HealthStatus { status: "unconfigured".to_string(), latency_ms: None, last_checked: timestamp }

@@ -2,7 +2,6 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { ApiEndpoint } from "../components/ApiEndpoint";
 import { openCommandPalette } from "../components/CommandPalette";
-import { CopilotCard } from "../components/CopilotCard";
 import { HealthIndicator } from "../components/HealthIndicator";
 import { ModelsWidget } from "../components/ModelsWidget";
 import { StatusIndicator } from "../components/StatusIndicator";
@@ -13,7 +12,6 @@ import {
 	type AgentStatus,
 	type AvailableModel,
 	appendToShellProfile,
-	type CopilotConfig,
 	configureCliAgent,
 	detectCliAgents,
 	disconnectProvider,
@@ -39,6 +37,12 @@ import { toastStore } from "../stores/toast";
 
 const providers = [
 	{ name: "Claude", provider: "claude" as Provider, logo: "/logos/claude.svg" },
+	{
+		name: "GitHub Copilot",
+		provider: "copilot" as Provider,
+		logo: "/logos/copilot.svg",
+	},
+	{ name: "Kiro", provider: "kiro" as Provider, logo: "/logos/kiro.svg" },
 	{
 		name: "ChatGPT",
 		provider: "openai" as Provider,
@@ -370,10 +374,7 @@ export function DashboardPage() {
 	const [stats, setStats] = createSignal<UsageStats | null>(null);
 	const [models, setModels] = createSignal<AvailableModel[]>([]);
 
-	// Copilot config handler
-	const handleCopilotConfigChange = (copilotConfig: CopilotConfig) => {
-		setConfig({ ...config(), copilot: copilotConfig });
-	};
+	// Copilot config is managed via proxy/provider connection (no dedicated UI card)
 
 	// Load data on mount
 	const loadAgents = async () => {
@@ -1259,13 +1260,6 @@ export function DashboardPage() {
 							</div>
 						</Show>
 					</div>
-
-					{/* === ZONE 3.5: GitHub Copilot === */}
-					<CopilotCard
-						config={config().copilot}
-						onConfigChange={handleCopilotConfigChange}
-						proxyRunning={proxyStatus().running}
-					/>
 
 					{/* === ZONE 4: API Endpoint === */}
 					<ApiEndpoint

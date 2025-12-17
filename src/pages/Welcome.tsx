@@ -22,6 +22,18 @@ const providers = [
 		description: "Anthropic's Claude models via Claude Code subscription",
 	},
 	{
+		name: "GitHub Copilot",
+		provider: "copilot" as Provider,
+		logo: "/logos/copilot.svg",
+		description: "Copilot models via CLIProxyAPIPlus",
+	},
+	{
+		name: "Kiro",
+		provider: "kiro" as Provider,
+		logo: "/logos/kiro.svg",
+		description: "Kiro models via CLIProxyAPIPlus",
+	},
+	{
 		name: "ChatGPT",
 		provider: "openai" as Provider,
 		logo: "/logos/openai.svg",

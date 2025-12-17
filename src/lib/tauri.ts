@@ -23,6 +23,8 @@ export async function getProxyStatus(): Promise<ProxyStatus> {
 // OAuth management
 export type Provider =
 	| "claude"
+	| "copilot"
+	| "kiro"
 	| "openai"
 	| "gemini"
 	| "qwen"
@@ -59,6 +61,8 @@ export async function importVertexCredential(
 
 export interface AuthStatus {
 	claude: number;
+	copilot: number;
+	kiro: number;
 	openai: number;
 	gemini: number;
 	qwen: number;
@@ -373,6 +377,15 @@ export async function onCopilotAuthRequired(
 	});
 }
 
+export interface CopilotDeviceCode {
+	userCode: string;
+}
+
+export interface CopilotAuthRequiredPayload {
+	message: string;
+	deviceCode?: CopilotDeviceCode;
+}
+
 // System notifications
 import {
 	isPermissionGranted,
@@ -427,6 +440,8 @@ export interface HealthStatus {
 
 export interface ProviderHealth {
 	claude: HealthStatus;
+	copilot: HealthStatus;
+	kiro: HealthStatus;
 	openai: HealthStatus;
 	gemini: HealthStatus;
 	qwen: HealthStatus;

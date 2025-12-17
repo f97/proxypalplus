@@ -31,6 +31,8 @@ function createAppStore() {
 	// Auth state
 	const [authStatus, setAuthStatus] = createSignal<AuthStatus>({
 		claude: 0,
+		copilot: 0,
+		kiro: 0,
 		openai: 0,
 		gemini: 0,
 		qwen: 0,
